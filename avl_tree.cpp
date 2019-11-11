@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <iomanip>
 #include <iostream>
 #include <random>
 
@@ -94,16 +95,6 @@ INode* rotateLeft(INode* root) {
     return newRoot;
 }
 
-void treeWalk(INode* root, int lvl = 0) {
-    if (!root->right->hasValue()) {
-        treeWalk(root->right, lvl + 1);
-    }
-    if (!root->left->hasValue()) {
-        treeWalk(root->left, lvl + 1);
-    }
-    std::cout << root->getKey() << " " << lvl << " | " << std::endl;
-}
-
 int treeLength(INode* root) {
     if (!root->hasValue()) {
         return 0;
@@ -124,23 +115,18 @@ INode* insertNode(INode* root, int key) {
 
     root->recalcHeight();
 
-    int bal = root->balance();  // - = left-heavy, + = right heavy
-
-    if (bal > 1 && key > root->right->getKey()) {  // tree is right-heavy and the key was inserted to the right of the right child - Right-Right
+    int bal = root->balance();              // - = right-heavy, + = left heavy
+    if (bal < -1) {                         // tree is right-heavy
+        if (key < root->right->getKey()) {  // Key was inserted to the right of the right child
+            root->right = rotateRight(root->right);
+        }
         return rotateLeft(root);
     }
 
-    if (bal < -1 && key < root->left->getKey()) {  // tree is left-heavy and the key was inserted to the Left of the Left child - Left-Left
-        return rotateRight(root);
-    }
-
-    if (bal > 1 && key < root->right->getKey()) {  // tree is right-heavy and the key was inserted to the Left of the Right child - Right-Left
-        root->right = rotateRight(root->right);
-        return rotateLeft(root);
-    }
-
-    if (bal < -1 && key > root->left->getKey()) {  // tree is left-heavy and the key was inserted to the Left of the Right child - Left-Right
-        root->left = rotateLeft(root->left);
+    if (bal > 1) {                         // tree is left-heavy
+        if (key > root->left->getKey()) {  // Key was inserted to the right of the left child
+            root->left = rotateLeft(root->left);
+        }
         return rotateRight(root);
     }
 
@@ -152,26 +138,46 @@ class AvlTree {
     INode* root;
 
    public:
-    // void insert() {
-    // root = insertNode(root, )
-    // }
+    AvlTree() {
+        root = new EmptyNode();
+    }
+    void insert(int key) {
+        root = insertNode(root, key);
+    }
 };
+
+// void postorder(INode* p, int indent = 4)
+// {
+//     if(p->hasValue()) {
+//         if(p->right->hasValue()) {
+//             postorder(p->right, indent+4);
+//         }
+//         if (indent) {
+//             std::cout << std::setw(indent) << ' ';
+//         }
+//         if (p->right->hasValue()) std::cout<<" /\n" << std::setw(indent) << ' ';
+//         std::cout<< p->getKey() << "\n ";
+//         if(p->left->hasValue()) {
+//             std::cout << std::setw(indent) << ' ' <<" \\\n";
+//             postorder(p->left, indent+4);
+//         }
+//     }
+// }
+
+void balanced(INode* root) {
+    if (root->right->hasValue()) {
+        balanced(root->right);
+    }
+    if (root->left->hasValue()) {
+        balanced(root->left);
+    }
+    std::cout << root->balance() << std::endl;
+}
 
 int main() {
     std::random_device rd;
     std::mt19937_64 gen(rd());
 
     /* This is where you define the number generator for unsigned long long: */
-    std::uniform_int_distribution<int> dis;
-
-    INode* root = new EmptyNode();
-    // std::cout << root->getKey() << std::endl;
-    for (int i = 0; i < 300; i++) {
-        root = insertNode(root, i);
-        std::cout << fstd::endl;
-    }
-
-    // treeWalk(root);
-
     return 0;
 }
