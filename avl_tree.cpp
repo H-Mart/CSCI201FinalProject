@@ -13,7 +13,7 @@ class INode {
     INode* right;
     virtual int balance() = 0;
     virtual int height() = 0;
-    virtual int getKey() {}
+    virtual int getKey() { std::cout << "This should never be called!"; }
     virtual bool hasValue() = 0;
     virtual void recalcHeight() = 0;
 };
@@ -26,17 +26,11 @@ class EmptyNode : public INode {
         this->right = NULL;
     }
 
-    int balance() override {
-        return 0;
-    }
+    int balance() override { return 0; }
 
-    int height() override {
-        return 0;
-    }
+    int height() override { return 0; }
 
-    bool hasValue() {
-        return false;
-    }
+    bool hasValue() { return false; }
 
     void recalcHeight() override { return; }
 };
@@ -50,21 +44,13 @@ class Node : public INode {
         this->key = key;
     }
 
-    int balance() override {
-        return left->height() - right->height();
-    }
+    int balance() override { return left->height() - right->height(); }
 
-    int height() override {
-        return h;
-    }
+    int height() override { return h; }
 
-    int getKey() override {
-        return key;
-    }
+    int getKey() override { return key; }
 
-    bool hasValue() {
-        return true;
-    }
+    bool hasValue() { return true; }
 
     void recalcHeight() override {
         h = std::max(left->height(), right->height()) + 1;
@@ -112,19 +98,20 @@ INode* insertNode(INode* root, int key) {
     } else {
         return root;
     }
-
     root->recalcHeight();
+    int bal = root->balance();  // - = right-heavy, + = left heavy
 
-    int bal = root->balance();              // - = right-heavy, + = left heavy
     if (bal < -1) {                         // tree is right-heavy
-        if (key < root->right->getKey()) {  // Key was inserted to the right of the right child
+        if (key < root->right->getKey()) {  // Key was inserted to the right of
+                                            // the right child
             root->right = rotateRight(root->right);
         }
         return rotateLeft(root);
     }
 
     if (bal > 1) {                         // tree is left-heavy
-        if (key > root->left->getKey()) {  // Key was inserted to the right of the left child
+        if (key > root->left->getKey()) {  // Key was inserted to the right of
+                                           // the left child
             root->left = rotateLeft(root->left);
         }
         return rotateRight(root);
@@ -133,51 +120,61 @@ INode* insertNode(INode* root, int key) {
     return root;
 }
 
+INode* searchTree(INode* root, int value) {
+    INode** searchPointer = &root;
+    while (1) {
+        if ((*searchPointer)->getKey() == value) {
+            return *searchPointer;
+        }
+        if (value < (*searchPointer)->getKey()) {
+            if (root->left->hasValue()) {
+                *searchPointer = root->left;
+            } else {
+                return new EmptyNode;
+            }
+        }
+        if (value > (*searchPointer)->getKey()) {
+            if (root->right->hasValue()) {
+                *searchPointer = root->right;
+            } else {
+                return new EmptyNode;
+            }
+        }
+    }
+}
+
 class AvlTree {
    private:
     INode* root;
 
-   public:
-    AvlTree() {
-        root = new EmptyNode();
+    void postorder(INode* p, int indent = 0) {
+        if (p->hasValue()) {
+            if (p->right->hasValue()) {
+                postorder(p->right, indent + 4);
+            }
+            if (indent) {
+                std::cout << std::setw(indent) << ' ';
+            }
+            if (p->right->hasValue()) std::cout << " /\n"
+                                                << std::setw(indent) << ' ';
+            std::cout << p->getKey() << "\n ";
+            if (p->left->hasValue()) {
+                std::cout << std::setw(indent) << ' ' << " \\\n";
+                postorder(p->left, indent + 4);
+            }
+        }
     }
-    void insert(int key) {
-        root = insertNode(root, key);
+
+   public:
+    AvlTree() { root = new EmptyNode(); }
+    void insert(int key) { root = insertNode(root, key); }
+    INode* search(int key) { return searchTree(root, key); }
+    int height() { return root->height(); }
+    void postorder(int indent = 4) {
+        postorder(root);
     }
 };
 
-// void postorder(INode* p, int indent = 4)
-// {
-//     if(p->hasValue()) {
-//         if(p->right->hasValue()) {
-//             postorder(p->right, indent+4);
-//         }
-//         if (indent) {
-//             std::cout << std::setw(indent) << ' ';
-//         }
-//         if (p->right->hasValue()) std::cout<<" /\n" << std::setw(indent) << ' ';
-//         std::cout<< p->getKey() << "\n ";
-//         if(p->left->hasValue()) {
-//             std::cout << std::setw(indent) << ' ' <<" \\\n";
-//             postorder(p->left, indent+4);
-//         }
-//     }
-// }
-
-void balanced(INode* root) {
-    if (root->right->hasValue()) {
-        balanced(root->right);
-    }
-    if (root->left->hasValue()) {
-        balanced(root->left);
-    }
-    std::cout << root->balance() << std::endl;
-}
-
 int main() {
-    std::random_device rd;
-    std::mt19937_64 gen(rd());
-
-    /* This is where you define the number generator for unsigned long long: */
     return 0;
 }
